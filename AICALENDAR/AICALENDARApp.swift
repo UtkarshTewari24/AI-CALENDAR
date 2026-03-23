@@ -14,8 +14,8 @@ struct AICALENDARApp: App {
             fatalError("Failed to create ModelContainer: \(error)")
         }
 
-        // Overwrite API key on launch (requested)
-        KeychainService.openAIAPIKey = "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"
+        // Set Groq API key on launch
+        KeychainService.openAIAPIKey = "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"
     }
 
     var body: some Scene {

@@ -13,12 +13,13 @@ struct WeekGridView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Week header
+            // Week header - fixed to intrinsic height
             WeekHeaderView(
                 weekDays: weekDays,
                 selectedDate: selectedDate,
                 onDateSelect: onDateSelect
             )
+            .fixedSize(horizontal: false, vertical: true)
 
             ScrollView(.vertical, showsIndicators: true) {
                 HStack(alignment: .top, spacing: 0) {

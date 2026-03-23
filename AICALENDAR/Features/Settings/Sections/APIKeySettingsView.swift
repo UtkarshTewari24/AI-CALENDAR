@@ -8,7 +8,7 @@ struct APIKeySettingsView: View {
 
     var body: some View {
         Form {
-            Section("OpenAI API Key") {
+            Section("Groq API Key") {
                 if hasExistingKey && apiKey.isEmpty {
                     HStack {
                         Text("sk-...••••••••")
@@ -61,7 +61,7 @@ struct APIKeySettingsView: View {
             }
 
             Section {
-                Text("Your API key is stored securely in the iOS Keychain. It is never sent anywhere except to OpenAI's servers.")
+                Text("Your API key is stored securely in the iOS Keychain. It is never sent anywhere except to Groq's servers.")
                     .font(AxiomTypography.micro)
                     .foregroundStyle(AxiomColors.textSecondary)
             }

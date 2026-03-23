@@ -231,12 +231,12 @@ enum OpenAIServiceError: Error, LocalizedError {
 
 enum OpenAIService {
 
-    private static let baseURL = "https://api.openai.com/v1/chat/completions"
+    private static let baseURL = "https://api.groq.com/openai/v1/chat/completions"
 
     static func sendChatCompletion(
         messages: [OpenAIMessage],
         tools: [OpenAITool]? = nil,
-        model: String = "gpt-4o",
+        model: String = "openai/gpt-oss-120b",
         temperature: Double = 0.7,
         responseFormat: [String: String]? = nil,
         systemPrompt: String? = nil

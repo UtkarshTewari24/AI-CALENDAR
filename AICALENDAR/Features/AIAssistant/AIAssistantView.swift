@@ -4,6 +4,7 @@ import SwiftData
 struct AIAssistantView: View {
     @State private var viewModel = AIAssistantViewModel()
     @Environment(\.modelContext) private var modelContext
+    @Environment(ThemeManager.self) private var theme
     @Query(sort: \CalendarEvent.startDate) private var todayEvents: [CalendarEvent]
 
     private var todayEventCount: Int {
@@ -45,6 +46,10 @@ struct AIAssistantView: View {
                             .padding(.horizontal, AxiomSpacing.md)
                             .padding(.vertical, AxiomSpacing.sm)
                         }
+                        .scrollDismissesKeyboard(.interactively)
+                        .onTapGesture {
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
                         .onChange(of: viewModel.messages.count) { _, _ in
                             if let last = viewModel.messages.last {
                                 withAnimation {
@@ -78,6 +83,14 @@ struct AIAssistantView: View {
             }
             .navigationTitle("AI Assistant")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
+            }
         }
     }
 
@@ -95,7 +108,7 @@ struct AIAssistantView: View {
             }
             Spacer()
             Image(systemName: "sparkles")
-                .foregroundStyle(AxiomColors.accent)
+                .foregroundStyle(theme.accentColor)
         }
         .padding(AxiomSpacing.md)
         .background(AxiomColors.surface)

@@ -75,7 +75,19 @@ enum ScheduleGenerationService {
     }
 
     private static func parseGeneratedEvents(from jsonString: String) throws -> [CalendarEvent] {
-        guard let data = jsonString.data(using: .utf8) else {
+        // Strip markdown code fences if present
+        var cleaned = jsonString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if cleaned.hasPrefix("```json") {
+            cleaned = String(cleaned.dropFirst(7))
+        } else if cleaned.hasPrefix("```") {
+            cleaned = String(cleaned.dropFirst(3))
+        }
+        if cleaned.hasSuffix("```") {
+            cleaned = String(cleaned.dropLast(3))
+        }
+        cleaned = cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard let data = cleaned.data(using: .utf8) else {
             throw ScheduleGenerationError.invalidJSON
         }
 

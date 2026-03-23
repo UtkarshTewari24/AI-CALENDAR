@@ -13,18 +13,18 @@ struct WeekHeaderView: View {
             ForEach(weekDays, id: \.self) { day in
                 VStack(spacing: 2) {
                     Text(day.dayOfWeekShort)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(day.isToday ? AxiomColors.accent : AxiomColors.textSecondary)
 
                     ZStack {
                         if day.isToday {
                             Circle()
                                 .fill(AxiomColors.accent)
-                                .frame(width: 28, height: 28)
+                                .frame(width: 22, height: 22)
                         }
 
                         Text(day.dayNumber)
-                            .font(.system(size: 14, weight: day.isToday ? .bold : .regular))
+                            .font(.system(size: 12, weight: day.isToday ? .bold : .regular))
                             .foregroundStyle(day.isToday ? .white : AxiomColors.textPrimary)
                     }
                 }
@@ -34,7 +34,7 @@ struct WeekHeaderView: View {
                 }
             }
         }
-        .padding(.vertical, AxiomSpacing.sm)
-        .background(AxiomColors.backgroundSecondary)
+        .padding(.vertical, 6)
+        .background(AxiomColors.backgroundSecondary.opacity(0.9))
     }
 }

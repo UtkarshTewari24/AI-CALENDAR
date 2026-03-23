@@ -23,7 +23,7 @@ struct AppearanceSettingsView: View {
                             .frame(width: 36, height: 36)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.white, lineWidth: theme.accentColorHex == preset.hex ? 3 : 0)
+                                    .stroke(AxiomColors.textPrimary.opacity(0.9), lineWidth: theme.accentColorHex == preset.hex ? 2 : 0)
                             )
                             .onTapGesture {
                                 theme.accentColorHex = preset.hex
@@ -31,6 +31,15 @@ struct AppearanceSettingsView: View {
                     }
                 }
                 .padding(.vertical, AxiomSpacing.sm)
+
+                HStack(spacing: AxiomSpacing.md) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(hex: theme.accentColorHex))
+                        .frame(width: 24, height: 24)
+                    Text("Current accent preview")
+                        .font(AxiomTypography.caption)
+                        .foregroundStyle(AxiomColors.textSecondary)
+                }
             }
 
             Section("Timeline") {

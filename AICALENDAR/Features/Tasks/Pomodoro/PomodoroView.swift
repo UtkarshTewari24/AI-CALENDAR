@@ -5,6 +5,7 @@ struct PomodoroView: View {
     let task: AxiomTask
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(ThemeManager.self) private var theme
 
     @State private var viewModel: PomodoroViewModel
 
@@ -73,7 +74,7 @@ struct PomodoroView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(AxiomColors.accent)
+            .background(theme.accentColor)
             .foregroundStyle(.white)
             .font(AxiomTypography.headline)
             .cornerRadius(12)
@@ -107,7 +108,7 @@ struct PomodoroView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(AxiomColors.accent)
+                    .background(theme.accentColor)
                     .foregroundStyle(.white)
                     .font(AxiomTypography.headline)
                     .cornerRadius(12)
@@ -123,7 +124,7 @@ struct PomodoroView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(AxiomColors.accent)
+            .background(theme.accentColor)
             .foregroundStyle(.white)
             .font(AxiomTypography.headline)
             .cornerRadius(12)
@@ -153,3 +154,4 @@ struct PomodoroView: View {
         generator.notificationOccurred(.success)
     }
 }
+

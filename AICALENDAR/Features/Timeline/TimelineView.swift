@@ -36,7 +36,7 @@ struct TimelineView: View {
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(AxiomColors.accent)
+                                .foregroundStyle(theme.accentColor)
                         }
                         .padding(.leading, AxiomSpacing.sm)
                     }
@@ -72,6 +72,7 @@ struct TimelineView: View {
                     }
                 }
             }
+            .toolbar(.hidden, for: .navigationBar)
         }
         .sheet(isPresented: $viewModel.showingAddSheet) {
             AddEventView(prefilledDate: viewModel.selectedDate)
@@ -82,3 +83,4 @@ struct TimelineView: View {
         }
     }
 }
+

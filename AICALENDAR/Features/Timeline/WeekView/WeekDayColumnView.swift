@@ -12,7 +12,7 @@ struct WeekDayColumnView: View {
             // Background highlight for today
             if isToday {
                 Rectangle()
-                    .fill(AxiomColors.accent.opacity(0.05))
+                    .fill(AxiomColors.accent.opacity(0.035))
             }
 
             // Hour grid lines
@@ -20,7 +20,7 @@ struct WeekDayColumnView: View {
                 ForEach(0..<24, id: \.self) { _ in
                     VStack(spacing: 0) {
                         Rectangle()
-                            .fill(AxiomColors.surface.opacity(0.3))
+                            .fill(AxiomColors.surface.opacity(0.22))
                             .frame(height: 0.5)
                         Spacer()
                     }
@@ -52,7 +52,7 @@ struct WeekDayColumnView: View {
                 let yOffset = nowMinutes / 60.0 * hourHeight
                 Rectangle()
                     .fill(AxiomColors.nowLine)
-                    .frame(height: 2)
+                    .frame(height: 1.5)
                     .offset(y: yOffset)
             }
         }
