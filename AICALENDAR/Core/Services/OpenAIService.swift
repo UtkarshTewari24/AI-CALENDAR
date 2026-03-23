@@ -94,7 +94,7 @@ enum OpenAIContent: Codable {
     }
 }
 
-struct OpenAIToolCall: Codable {
+struct OpenAIToolCall: Codable, Identifiable {
     let id: String
     let type: String
     let function: FunctionCall
@@ -220,7 +220,7 @@ enum OpenAIServiceError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .noAPIKey: return "No OpenAI API key configured."
+        case .noAPIKey: return "No API key configured. Add your OpenAI API key in Settings."
         case .invalidURL: return "Invalid API URL."
         case .requestFailed(let msg): return "Request failed: \(msg)"
         case .decodingFailed(let msg): return "Failed to decode response: \(msg)"
@@ -232,12 +232,14 @@ enum OpenAIServiceError: Error, LocalizedError {
 enum OpenAIService {
 
     private static let baseURL = "https://api.openai.com/v1/chat/completions"
+
     static func sendChatCompletion(
         messages: [OpenAIMessage],
         tools: [OpenAITool]? = nil,
         model: String = "gpt-4o",
         temperature: Double = 0.7,
-        responseFormat: [String: String]? = nil
+        responseFormat: [String: String]? = nil,
+        systemPrompt: String? = nil
     ) async throws -> OpenAIResponse {
         guard let apiKey = KeychainService.openAIAPIKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey
@@ -252,6 +254,12 @@ enum OpenAIService {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
+        // Build messages array, prepending system prompt if provided separately
+        var allMessages = messages
+        if let systemPrompt {
+            allMessages.insert(.system(systemPrompt), at: 0)
+        }
+
         var body: [String: Any] = [
             "model": model,
             "temperature": temperature
@@ -259,7 +267,7 @@ enum OpenAIService {
 
         // Encode messages
         let encoder = JSONEncoder()
-        let messagesData = try encoder.encode(messages)
+        let messagesData = try encoder.encode(allMessages)
         let messagesJSON = try JSONSerialization.jsonObject(with: messagesData)
         body["messages"] = messagesJSON
 
