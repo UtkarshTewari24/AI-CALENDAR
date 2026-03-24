@@ -21,6 +21,8 @@ enum UserDefaultsService {
         static let dailyBriefingHour = "axiom_daily_briefing_hour"
         static let pomodoroBreakReminder = "axiom_pomodoro_break_reminder"
         static let gracePeriodMinutes = "axiom_grace_period_minutes"
+        static let overdueAlarmEnabled = "axiom_overdue_alarm_enabled"
+        static let punishmentBlinkEnabled = "axiom_punishment_blink_enabled"
     }
 
     // MARK: - Appearance
@@ -109,5 +111,17 @@ enum UserDefaultsService {
     static var gracePeriodMinutes: Int {
         get { defaults.object(forKey: Keys.gracePeriodMinutes) as? Int ?? 0 }
         set { defaults.set(newValue, forKey: Keys.gracePeriodMinutes) }
+    }
+
+    // MARK: - Overdue Alarms & Punishment
+
+    static var overdueAlarmEnabled: Bool {
+        get { defaults.object(forKey: Keys.overdueAlarmEnabled) as? Bool ?? false }
+        set { defaults.set(newValue, forKey: Keys.overdueAlarmEnabled) }
+    }
+
+    static var punishmentBlinkEnabled: Bool {
+        get { defaults.object(forKey: Keys.punishmentBlinkEnabled) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Keys.punishmentBlinkEnabled) }
     }
 }

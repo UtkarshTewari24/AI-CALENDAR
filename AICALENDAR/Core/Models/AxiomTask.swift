@@ -19,6 +19,7 @@ final class AxiomTask {
     var linkedEventId: UUID?
     var pomodoroDurationMinutes: Int
     var totalTimeLogged: Int
+    var completedAt: Date?
     var createdAt: Date
 
     var status: TaskStatus {
@@ -37,6 +38,11 @@ final class AxiomTask {
 
     var timeRemaining: TimeInterval {
         deadline.timeIntervalSince(Date())
+    }
+
+    var timeBeforeDeadline: TimeInterval? {
+        guard let completed = completedAt ?? verifiedAt else { return nil }
+        return deadline.timeIntervalSince(completed)
     }
 
     init(
@@ -68,6 +74,7 @@ final class AxiomTask {
         self.linkedEventId = linkedEventId
         self.pomodoroDurationMinutes = pomodoroDurationMinutes
         self.totalTimeLogged = 0
+        self.completedAt = nil
         self.createdAt = createdAt
     }
 }

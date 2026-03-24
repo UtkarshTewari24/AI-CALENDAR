@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AxiomTaskRow: View {
     let task: AxiomTask
+    @Environment(ThemeManager.self) private var theme
 
     var body: some View {
         HStack(spacing: AxiomSpacing.md) {
@@ -47,7 +48,7 @@ struct AxiomTaskRow: View {
 
     private var statusColor: Color {
         switch task.status {
-        case .pending: return task.isOverdue ? AxiomColors.destructive : AxiomColors.accent
+        case .pending: return task.isOverdue ? AxiomColors.destructive : theme.effectiveAccentColor
         case .completed: return AxiomColors.success
         case .failed: return AxiomColors.destructive
         }

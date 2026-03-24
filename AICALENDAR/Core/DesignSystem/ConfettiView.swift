@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ConfettiView: View {
+    @Environment(ThemeManager.self) private var theme
     @Binding var isActive: Bool
 
     @State private var particles: [ConfettiParticle] = []
@@ -36,7 +37,7 @@ struct ConfettiView: View {
 
     private func generateParticles() {
         let colors: [Color] = [
-            AxiomColors.accent,
+            theme.effectiveAccentColor,
             AxiomColors.success,
             AxiomColors.workout,
             AxiomColors.work,

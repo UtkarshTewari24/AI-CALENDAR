@@ -11,13 +11,15 @@ final class AppState {
     enum AppTab: Int, CaseIterable {
         case timeline = 0
         case tasks = 1
-        case ai = 2
-        case settings = 3
+        case progress = 2
+        case ai = 3
+        case settings = 4
 
         var title: String {
             switch self {
             case .timeline: return "Timeline"
             case .tasks: return "Tasks"
+            case .progress: return "Progress"
             case .ai: return "AI"
             case .settings: return "Settings"
             }
@@ -27,6 +29,7 @@ final class AppState {
             switch self {
             case .timeline: return "calendar"
             case .tasks: return "checkmark.circle"
+            case .progress: return "chart.bar.fill"
             case .ai: return "sparkles"
             case .settings: return "gearshape"
             }

@@ -11,6 +11,13 @@ final class UserProfile {
     var surveyDataJSON: String
     var createdAt: Date
 
+    // Streak tracking
+    var currentStreak: Int
+    var longestStreak: Int
+    var itemsCompletedInARow: Int
+    var lastStreakDate: Date?
+    var totalTasksCompleted: Int
+
     init(
         id: UUID = UUID(),
         appleUserId: String = "",
@@ -18,7 +25,12 @@ final class UserProfile {
         email: String = "",
         onboardingCompleted: Bool = false,
         surveyDataJSON: String = "{}",
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        currentStreak: Int = 0,
+        longestStreak: Int = 0,
+        itemsCompletedInARow: Int = 0,
+        lastStreakDate: Date? = nil,
+        totalTasksCompleted: Int = 0
     ) {
         self.id = id
         self.appleUserId = appleUserId
@@ -27,5 +39,10 @@ final class UserProfile {
         self.onboardingCompleted = onboardingCompleted
         self.surveyDataJSON = surveyDataJSON
         self.createdAt = createdAt
+        self.currentStreak = currentStreak
+        self.longestStreak = longestStreak
+        self.itemsCompletedInARow = itemsCompletedInARow
+        self.lastStreakDate = lastStreakDate
+        self.totalTasksCompleted = totalTasksCompleted
     }
 }

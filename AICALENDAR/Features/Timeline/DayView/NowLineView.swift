@@ -9,27 +9,13 @@ struct NowLineView: View {
         let minutes = currentTime.minutesSinceStartOfDay()
         let yOffset = minutes / 60.0 * hourHeight
 
-        ZStack(alignment: .topLeading) {
-            HStack(spacing: 0) {
-                // Red dot
-                Circle()
-                    .fill(AxiomColors.nowLine)
-                    .frame(width: TimelineConstants.nowLineDotSize, height: TimelineConstants.nowLineDotSize)
-                    .offset(x: TimelineConstants.hourLabelWidth - TimelineConstants.nowLineDotSize / 2)
-
-                // Red line
-                Rectangle()
-                    .fill(AxiomColors.nowLine)
-                    .frame(height: 2)
-            }
-            .offset(y: yOffset)
-
-            // Time label
-            Text(currentTime.formattedShortTime)
-                .font(AxiomTypography.micro)
-                .foregroundStyle(AxiomColors.nowLine)
-                .offset(x: 4, y: yOffset - 8)
-        }
+        // White text showing current time, positioned at the now offset
+        Text(currentTime.formattedShortTime)
+            .font(.system(size: 11, weight: .bold, design: .monospaced))
+            .foregroundStyle(.white)
+            .frame(width: TimelineConstants.hourLabelWidth, alignment: .trailing)
+            .padding(.trailing, AxiomSpacing.sm)
+            .offset(y: yOffset - 8)
         .task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(60))

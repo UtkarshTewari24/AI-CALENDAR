@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ScheduleGenerationView: View {
+    @Environment(ThemeManager.self) private var theme
     @Bindable var coordinator: OnboardingCoordinator
 
     @State private var loadingMessageIndex = 0
@@ -29,7 +30,7 @@ struct ScheduleGenerationView: View {
                 ZStack {
                     // Outer pulsing ring
                     Circle()
-                        .stroke(AxiomColors.accent.opacity(0.2), lineWidth: 2)
+                        .stroke(theme.effectiveAccentColor.opacity(0.2), lineWidth: 2)
                         .frame(width: 120, height: 120)
                         .scaleEffect(pulseScale)
                         .opacity(2.0 - Double(pulseScale))
@@ -42,14 +43,14 @@ struct ScheduleGenerationView: View {
                     // Spinning arc
                     Circle()
                         .trim(from: 0, to: 0.3)
-                        .stroke(AxiomColors.accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .stroke(theme.effectiveAccentColor, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                         .frame(width: 80, height: 80)
                         .rotationEffect(.degrees(isSpinning ? 360 : 0))
 
                     // Center icon
                     Image(systemName: "sparkles")
                         .font(.system(size: 28, weight: .medium))
-                        .foregroundStyle(AxiomColors.accent)
+                        .foregroundStyle(theme.effectiveAccentColor)
                         .symbolEffect(.pulse, isActive: isSpinning)
                 }
 
@@ -63,7 +64,7 @@ struct ScheduleGenerationView: View {
                 HStack(spacing: 4) {
                     ForEach(0..<3, id: \.self) { index in
                         Circle()
-                            .fill(AxiomColors.accent)
+                            .fill(theme.effectiveAccentColor)
                             .frame(width: 6, height: 6)
                             .offset(y: dotOffsets[index])
                     }
@@ -96,7 +97,7 @@ struct ScheduleGenerationView: View {
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 52)
-                                .background(AxiomColors.accent)
+                                .background(theme.effectiveAccentColor)
                                 .cornerRadius(12)
                         }
                     }
@@ -116,8 +117,8 @@ struct ScheduleGenerationView: View {
             isSpinning = true
         }
 
-        // Pulse ring
-        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) {
+        // Pulse ring - smoothly breathe in and out
+        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
             pulseScale = 1.4
         }
 

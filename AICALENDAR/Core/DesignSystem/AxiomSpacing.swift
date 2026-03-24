@@ -16,4 +16,5 @@ enum TimelineConstants {
     static let eventBlockBorderWidth: CGFloat = 4
     static let minimumBlockHeight: CGFloat = 44
     static let nowLineDotSize: CGFloat = 10
+    static let iconColumnWidth: CGFloat = 28
 }

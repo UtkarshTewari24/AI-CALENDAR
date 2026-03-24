@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SurveyView: View {
+    @Environment(ThemeManager.self) private var theme
     @Bindable var coordinator: OnboardingCoordinator
     @State private var currentPage = 0
     private let totalPages = 5
@@ -11,8 +12,8 @@ struct SurveyView: View {
 
             VStack(spacing: 0) {
                 // Progress bar
-                ProgressView(value: Double(currentPage + 1), total: Double(totalPages))
-                    .tint(AxiomColors.accent)
+                SwiftUI.ProgressView(value: Double(currentPage + 1), total: Double(totalPages))
+                    .tint(theme.effectiveAccentColor)
                     .padding(.horizontal, AxiomSpacing.lg)
                     .padding(.top, AxiomSpacing.md)
 
@@ -76,7 +77,7 @@ struct SurveyView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
-                            .background(AxiomColors.accent)
+                            .background(theme.effectiveAccentColor)
                             .cornerRadius(12)
                     }
                 }
@@ -90,6 +91,7 @@ struct SurveyView: View {
 // MARK: - Section A: Daily Rhythm
 
 private struct DailyRhythmPage: View {
+    @Environment(ThemeManager.self) private var theme
     @Binding var survey: SurveyResponse
 
     var body: some View {
@@ -135,7 +137,7 @@ private struct DailyRhythmPage: View {
                             .font(AxiomTypography.title2)
                             .foregroundStyle(AxiomColors.textPrimary)
                         Slider(value: $survey.workStudyHours, in: 0...14, step: 1)
-                            .tint(AxiomColors.accent)
+                            .tint(theme.effectiveAccentColor)
                     }
                 }
             }
@@ -195,7 +197,11 @@ private struct FitnessPage: View {
 // MARK: - Section C: Work / Study
 
 private struct WorkStudyPage: View {
+    @Environment(ThemeManager.self) private var theme
     @Binding var survey: SurveyResponse
+
+    private let dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
+    private let dayValues = [1, 2, 3, 4, 5, 6, 7]
 
     var body: some View {
         ScrollView {
@@ -211,6 +217,53 @@ private struct WorkStudyPage: View {
                         .foregroundStyle(AxiomColors.textPrimary)
                 }
 
+                SurveyQuestion(title: "What days do you work/study?") {
+                    HStack(spacing: AxiomSpacing.sm) {
+                        ForEach(Array(zip(dayValues, dayLabels)), id: \.0) { value, label in
+                            Button {
+                                if survey.workDays.contains(value) {
+                                    survey.workDays.removeAll { $0 == value }
+                                } else {
+                                    survey.workDays.append(value)
+                                }
+                            } label: {
+                                Text(label)
+                                    .font(AxiomTypography.caption.bold())
+                                    .frame(width: 36, height: 36)
+                                    .background(survey.workDays.contains(value) ? theme.effectiveAccentColor : AxiomColors.surface)
+                                    .foregroundStyle(survey.workDays.contains(value) ? .white : AxiomColors.textPrimary)
+                                    .clipShape(Circle())
+                            }
+                        }
+                    }
+                }
+
+                SurveyQuestion(title: "What time does your work/school start and end?") {
+                    VStack(spacing: AxiomSpacing.sm) {
+                        HStack {
+                            Text("Start")
+                                .font(AxiomTypography.body)
+                                .foregroundStyle(AxiomColors.textPrimary)
+                            Spacer()
+                            TimePicker(hour: $survey.workStartHour, minute: $survey.workStartMinute)
+                        }
+                        .padding()
+                        .background(AxiomColors.surface)
+                        .cornerRadius(12)
+
+                        HStack {
+                            Text("End")
+                                .font(AxiomTypography.body)
+                                .foregroundStyle(AxiomColors.textPrimary)
+                            Spacer()
+                            TimePicker(hour: $survey.workEndHour, minute: $survey.workEndMinute)
+                        }
+                        .padding()
+                        .background(AxiomColors.surface)
+                        .cornerRadius(12)
+                    }
+                }
+
                 SurveyQuestion(title: "When do you prefer to do deep focused work?") {
                     ChipSelector(
                         options: TimeOfDayPreference.allCases,
@@ -218,23 +271,30 @@ private struct WorkStudyPage: View {
                     )
                 }
 
-                SurveyQuestion(title: "How many hours of deep work per day?") {
-                    Stepper("\(survey.deepWorkHoursTarget) hours", value: $survey.deepWorkHoursTarget, in: 1...10)
+                SurveyQuestion(title: "Do you have other fixed commitments?") {
+                    Toggle("Classes, meetings, appointments, etc.", isOn: $survey.hasFixedCommitments)
                         .font(AxiomTypography.body)
                         .foregroundStyle(AxiomColors.textPrimary)
+                        .tint(theme.effectiveAccentColor)
                         .padding()
                         .background(AxiomColors.surface)
                         .cornerRadius(12)
                 }
 
-                SurveyQuestion(title: "Do you have fixed commitments?") {
-                    Toggle("Fixed schedule commitments", isOn: $survey.hasFixedCommitments)
-                        .font(AxiomTypography.body)
-                        .foregroundStyle(AxiomColors.textPrimary)
-                        .tint(AxiomColors.accent)
-                        .padding()
-                        .background(AxiomColors.surface)
-                        .cornerRadius(12)
+                if survey.hasFixedCommitments {
+                    ForEach($survey.fixedCommitments) { $commitment in
+                        FixedCommitmentRow(commitment: $commitment, dayLabels: dayLabels, dayValues: dayValues) {
+                            survey.fixedCommitments.removeAll { $0.id == commitment.id }
+                        }
+                    }
+
+                    Button {
+                        survey.fixedCommitments.append(FixedCommitment())
+                    } label: {
+                        Label("Add Commitment", systemImage: "plus.circle.fill")
+                            .font(AxiomTypography.caption)
+                            .foregroundStyle(theme.effectiveAccentColor)
+                    }
                 }
             }
             .padding(AxiomSpacing.lg)
@@ -242,9 +302,95 @@ private struct WorkStudyPage: View {
     }
 }
 
+// MARK: - Fixed Commitment Row
+
+private struct FixedCommitmentRow: View {
+    @Environment(ThemeManager.self) private var theme
+    @Binding var commitment: FixedCommitment
+    let dayLabels: [String]
+    let dayValues: [Int]
+    let onDelete: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AxiomSpacing.sm) {
+            HStack {
+                TextField("e.g. Lecture, Therapy", text: $commitment.name)
+                    .textFieldStyle(.plain)
+                    .font(AxiomTypography.body)
+                    .foregroundStyle(AxiomColors.textPrimary)
+
+                Button(action: onDelete) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(AxiomColors.textSecondary)
+                }
+            }
+
+            // Day selector
+            HStack(spacing: 6) {
+                ForEach(Array(zip(dayValues, dayLabels)), id: \.0) { value, label in
+                    Button {
+                        if commitment.days.contains(value) {
+                            commitment.days.removeAll { $0 == value }
+                        } else {
+                            commitment.days.append(value)
+                        }
+                    } label: {
+                        Text(label)
+                            .font(.system(size: 11, weight: .semibold))
+                            .frame(width: 28, height: 28)
+                            .background(commitment.days.contains(value) ? theme.effectiveAccentColor : AxiomColors.backgroundPrimary)
+                            .foregroundStyle(commitment.days.contains(value) ? .white : AxiomColors.textSecondary)
+                            .clipShape(Circle())
+                    }
+                }
+            }
+
+            HStack {
+                TimePicker(hour: $commitment.startHour, minute: $commitment.startMinute)
+                Text("to")
+                    .font(AxiomTypography.caption)
+                    .foregroundStyle(AxiomColors.textSecondary)
+                TimePicker(hour: $commitment.endHour, minute: $commitment.endMinute)
+            }
+        }
+        .padding()
+        .background(AxiomColors.surface)
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Time Picker
+
+private struct TimePicker: View {
+    @Binding var hour: Int
+    @Binding var minute: Int
+
+    private var timeBinding: Binding<Date> {
+        Binding<Date>(
+            get: {
+                var components = DateComponents()
+                components.hour = hour
+                components.minute = minute
+                return Calendar.current.date(from: components) ?? Date()
+            },
+            set: { newDate in
+                let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                hour = components.hour ?? hour
+                minute = components.minute ?? minute
+            }
+        )
+    }
+
+    var body: some View {
+        DatePicker("", selection: timeBinding, displayedComponents: .hourAndMinute)
+            .labelsHidden()
+    }
+}
+
 // MARK: - Section D: Routines
 
 private struct RoutinesPage: View {
+    @Environment(ThemeManager.self) private var theme
     @Binding var survey: SurveyResponse
 
     var body: some View {
@@ -256,7 +402,7 @@ private struct RoutinesPage: View {
                     Toggle("Morning routine", isOn: $survey.hasMorningRoutine)
                         .font(AxiomTypography.body)
                         .foregroundStyle(AxiomColors.textPrimary)
-                        .tint(AxiomColors.accent)
+                        .tint(theme.effectiveAccentColor)
                         .padding()
                         .background(AxiomColors.surface)
                         .cornerRadius(12)
@@ -284,7 +430,7 @@ private struct RoutinesPage: View {
                     Toggle("Evening routine", isOn: $survey.hasEveningRoutine)
                         .font(AxiomTypography.body)
                         .foregroundStyle(AxiomColors.textPrimary)
-                        .tint(AxiomColors.accent)
+                        .tint(theme.effectiveAccentColor)
                         .padding()
                         .background(AxiomColors.surface)
                         .cornerRadius(12)
@@ -385,6 +531,7 @@ private struct SurveyQuestion<Content: View>: View {
 }
 
 struct ChipSelector<T: Identifiable & Hashable>: View where T: RawRepresentable, T.RawValue == String {
+    @Environment(ThemeManager.self) private var theme
     let options: [T]
     @Binding var selected: T
 
@@ -398,7 +545,7 @@ struct ChipSelector<T: Identifiable & Hashable>: View where T: RawRepresentable,
                         .font(AxiomTypography.caption)
                         .padding(.horizontal, AxiomSpacing.md)
                         .padding(.vertical, AxiomSpacing.sm)
-                        .background(selected.id == option.id ? AxiomColors.accent : AxiomColors.surface)
+                        .background(selected.id == option.id ? theme.effectiveAccentColor : AxiomColors.surface)
                         .foregroundStyle(selected.id == option.id ? .white : AxiomColors.textPrimary)
                         .cornerRadius(20)
                 }
@@ -408,6 +555,7 @@ struct ChipSelector<T: Identifiable & Hashable>: View where T: RawRepresentable,
 }
 
 struct MultiChipSelector<T: Identifiable & Hashable>: View where T: RawRepresentable, T.RawValue == String {
+    @Environment(ThemeManager.self) private var theme
     let options: [T]
     @Binding var selected: [T]
     var maxSelection: Int? = nil
@@ -422,7 +570,7 @@ struct MultiChipSelector<T: Identifiable & Hashable>: View where T: RawRepresent
                         .font(AxiomTypography.caption)
                         .padding(.horizontal, AxiomSpacing.md)
                         .padding(.vertical, AxiomSpacing.sm)
-                        .background(selected.contains(where: { $0.id == option.id }) ? AxiomColors.accent : AxiomColors.surface)
+                        .background(selected.contains(where: { $0.id == option.id }) ? theme.effectiveAccentColor : AxiomColors.surface)
                         .foregroundStyle(selected.contains(where: { $0.id == option.id }) ? .white : AxiomColors.textPrimary)
                         .cornerRadius(20)
                 }

@@ -4,6 +4,7 @@ import SwiftData
 struct TaskDetailView: View {
     let task: AxiomTask
     @Environment(\.modelContext) private var modelContext
+    @Environment(ThemeManager.self) private var theme
     @Query private var sessions: [PomodoroSession]
 
     @State private var showPomodoro = false
@@ -134,7 +135,7 @@ struct TaskDetailView: View {
                         .font(AxiomTypography.headline)
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .background(AxiomColors.accent)
+                        .background(theme.effectiveAccentColor)
                         .foregroundStyle(.white)
                         .cornerRadius(12)
                 }

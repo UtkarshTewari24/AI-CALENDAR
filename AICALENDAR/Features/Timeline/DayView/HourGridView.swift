@@ -3,14 +3,16 @@ import SwiftUI
 struct HourGridView: View {
     let hourHeight: CGFloat
 
+    @State private var currentHour = Calendar.current.component(.hour, from: Date())
+
     var body: some View {
         VStack(spacing: 0) {
             ForEach(0..<24, id: \.self) { hour in
                 HStack(alignment: .top, spacing: 0) {
-                    // Hour label
+                    // Hour label — current hour is white, others are subtle gray
                     Text(hourLabel(for: hour))
                         .font(AxiomTypography.micro)
-                        .foregroundStyle(AxiomColors.textSecondary)
+                        .foregroundStyle(hour == currentHour ? AxiomColors.textPrimary : AxiomColors.timeLabel)
                         .frame(width: TimelineConstants.hourLabelWidth, alignment: .trailing)
                         .padding(.trailing, AxiomSpacing.sm)
                         .offset(y: -6)
@@ -24,6 +26,12 @@ struct HourGridView: View {
                     }
                 }
                 .frame(height: hourHeight)
+            }
+        }
+        .task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(60))
+                currentHour = Calendar.current.component(.hour, from: Date())
             }
         }
     }

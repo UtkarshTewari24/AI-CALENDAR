@@ -24,6 +24,18 @@ enum EventType: String, Codable, CaseIterable, Identifiable {
         case .taskDeadline: return "Task Deadline"
         }
     }
+
+    var defaultIcon: String {
+        switch self {
+        case .workout: return "figure.run"
+        case .work: return "laptopcomputer"
+        case .meal: return "fork.knife"
+        case .routine: return "arrow.clockwise"
+        case .personal: return "person.fill"
+        case .sleep: return "moon.fill"
+        case .taskDeadline: return "exclamationmark.triangle.fill"
+        }
+    }
 }
 
 // MARK: - Task Status

@@ -7,12 +7,14 @@ struct WeekDayColumnView: View {
     let isToday: Bool
     let onEventTap: (CalendarEvent) -> Void
 
+    @Environment(ThemeManager.self) private var theme
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             // Background highlight for today
             if isToday {
                 Rectangle()
-                    .fill(AxiomColors.accent.opacity(0.035))
+                    .fill(theme.effectiveAccentColor.opacity(0.035))
             }
 
             // Hour grid lines
@@ -62,24 +64,30 @@ struct WeekDayColumnView: View {
 
 private struct WeekEventBlock: View {
     let event: CalendarEvent
+    @Environment(ThemeManager.self) private var theme
 
     var body: some View {
         HStack(spacing: 0) {
             RoundedRectangle(cornerRadius: 1)
-                .fill(AxiomColors.color(for: event.type))
+                .fill(theme.effectiveAccentColor)
                 .frame(width: 2)
+
+            Image(systemName: event.resolvedIcon)
+                .font(.system(size: 8))
+                .foregroundStyle(AxiomColors.textPrimary)
+                .padding(.leading, 2)
 
             Text(event.title)
                 .font(.system(size: 9))
                 .foregroundStyle(AxiomColors.textPrimary)
                 .lineLimit(1)
-                .padding(.leading, 2)
+                .padding(.leading, 1)
 
             Spacer(minLength: 0)
         }
         .background(
             RoundedRectangle(cornerRadius: 4)
-                .fill(AxiomColors.color(for: event.type).opacity(0.15))
+                .fill(theme.effectiveAccentColor.opacity(0.15))
         )
         .clipShape(RoundedRectangle(cornerRadius: 4))
     }

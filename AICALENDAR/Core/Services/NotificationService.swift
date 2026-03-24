@@ -12,6 +12,15 @@ enum NotificationService {
         }
     }
 
+    static func requestTimeSensitivePermission() async -> Bool {
+        do {
+            return try await UNUserNotificationCenter.current()
+                .requestAuthorization(options: [.alert, .badge, .sound, .timeSensitive])
+        } catch {
+            return false
+        }
+    }
+
     static func scheduleEventReminder(eventId: UUID, title: String, date: Date, minutesBefore: Int = 10) {
         let content = UNMutableNotificationContent()
         content.title = title

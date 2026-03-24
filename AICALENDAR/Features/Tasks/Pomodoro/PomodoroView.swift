@@ -74,7 +74,7 @@ struct PomodoroView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(theme.accentColor)
+            .background(theme.effectiveAccentColor)
             .foregroundStyle(.white)
             .font(AxiomTypography.headline)
             .cornerRadius(12)
@@ -108,7 +108,7 @@ struct PomodoroView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(theme.accentColor)
+                    .background(theme.effectiveAccentColor)
                     .foregroundStyle(.white)
                     .font(AxiomTypography.headline)
                     .cornerRadius(12)
@@ -124,7 +124,7 @@ struct PomodoroView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(theme.accentColor)
+            .background(theme.effectiveAccentColor)
             .foregroundStyle(.white)
             .font(AxiomTypography.headline)
             .cornerRadius(12)

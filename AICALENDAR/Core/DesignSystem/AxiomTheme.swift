@@ -26,8 +26,21 @@ final class ThemeManager {
         didSet { UserDefaultsService.animateNowLine = animateNowLine }
     }
 
+    // Punishment blink state
+    var isBlinkingActive = false
+    var blinkPhase = false
+    private var blinkTimer: Timer?
+
     var accentColor: Color {
         Color(hex: accentColorHex)
+    }
+
+    /// Use this instead of accentColor throughout the app — respects punishment blink
+    var effectiveAccentColor: Color {
+        if isBlinkingActive {
+            return blinkPhase ? Color.red : Color.white
+        }
+        return accentColor
     }
 
     var resolvedColorScheme: ColorScheme? {
@@ -49,5 +62,21 @@ final class ThemeManager {
         self.fontSizePreference = UserDefaultsService.fontSize
         self.showNowLine = UserDefaultsService.showNowLine
         self.animateNowLine = UserDefaultsService.animateNowLine
+    }
+
+    func startPunishmentBlink() {
+        guard UserDefaultsService.punishmentBlinkEnabled else { return }
+        guard !isBlinkingActive else { return }
+        isBlinkingActive = true
+        blinkTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.blinkPhase.toggle()
+        }
+    }
+
+    func stopPunishmentBlink() {
+        isBlinkingActive = false
+        blinkPhase = false
+        blinkTimer?.invalidate()
+        blinkTimer = nil
     }
 }

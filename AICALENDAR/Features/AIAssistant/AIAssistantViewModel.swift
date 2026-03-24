@@ -29,15 +29,27 @@ final class AIAssistantViewModel {
     var pendingAction: PendingAction?
     var errorMessage: String?
 
+    // Voice mode
+    var isVoiceModeActive = false
+    var isListeningInVoiceMode = false
+    let ttsService = TextToSpeechService()
+    let speechService = SpeechRecognitionService()
+
     private var conversationHistory: [OpenAIMessage] = []
 
     init() {
         let systemMessage = """
         You are Axiom, a personal AI schedule assistant. You have access to the user's calendar and task list. \
         You can add, remove, reschedule, and swap events. You can also create tasks. \
-        Today is \(Date().formattedDate). Current time is \(Date().formattedTime). \
-        Be concise and helpful. When making changes, always explain what you'll do before doing it. \
-        Use the available tools to read and modify the calendar.
+        Today is \(Date().formattedDate). Current time is \(Date().formattedTime).
+
+        Rules:
+        - Be concise. Keep responses to 1-2 short sentences.
+        - NEVER use markdown formatting (no **, *, #, `, etc). Write plain text only.
+        - When making multiple changes, batch ALL tool calls into a single response. Do NOT make one change at a time.
+        - Before making changes, give a brief plain-text summary like "I'll add your morning workout and move lunch to 1pm." — no bullet lists, no time formatting with bold/italic.
+        - If the user asks to set up or rearrange multiple things, do them all at once in one batch of tool calls.
+        - Use the available tools to read and modify the calendar.
         """
         conversationHistory.append(.system(systemMessage))
     }
@@ -62,6 +74,11 @@ final class AIAssistantViewModel {
         }
 
         isLoading = false
+
+        // Auto-speak in voice mode
+        if isVoiceModeActive {
+            speakLastResponse()
+        }
     }
 
     func applyPendingAction(modelContext: ModelContext) async {
@@ -102,6 +119,49 @@ final class AIAssistantViewModel {
     func cancelPendingAction() {
         pendingAction = nil
         messages.append(ChatMessage(role: .system, content: "Action cancelled."))
+    }
+
+    // MARK: - Voice Mode
+
+    func toggleVoiceMode() {
+        isVoiceModeActive.toggle()
+        if !isVoiceModeActive {
+            stopVoiceMode()
+        }
+    }
+
+    func startListening() {
+        ttsService.stop()
+        speechService.transcribedText = ""
+        isListeningInVoiceMode = true
+        try? speechService.startRecording()
+    }
+
+    func stopListeningAndSend(modelContext: ModelContext) async {
+        speechService.stopRecording()
+        isListeningInVoiceMode = false
+
+        let text = speechService.transcribedText.trimmingCharacters(in: .whitespaces)
+        guard !text.isEmpty else { return }
+
+        inputText = text
+        await sendMessage(modelContext: modelContext)
+    }
+
+    func speakLastResponse() {
+        guard let lastAssistant = messages.last(where: { $0.role == .assistant }) else { return }
+        ttsService.speak(lastAssistant.content) { [weak self] in
+            // Auto-listen after speaking in voice mode
+            guard let self, self.isVoiceModeActive else { return }
+            self.startListening()
+        }
+    }
+
+    func stopVoiceMode() {
+        ttsService.stop()
+        speechService.stopRecording()
+        isListeningInVoiceMode = false
+        isVoiceModeActive = false
     }
 
     private func processConversation(modelContext: ModelContext) async throws {

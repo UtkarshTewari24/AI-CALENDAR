@@ -25,7 +25,7 @@ struct RootView: View {
             }
         }
         .preferredColorScheme(theme.resolvedColorScheme)
-        .tint(theme.accentColor)
+        .tint(theme.effectiveAccentColor)
         .onAppear {
             appState.checkOnboardingStatus(modelContext: modelContext)
         }
@@ -37,6 +37,7 @@ struct MainTabView: View {
     @Environment(ThemeManager.self) private var theme
     @Environment(\.modelContext) private var modelContext
     @Query(filter: #Predicate<AxiomTask> { $0.statusRaw == "pending" }) private var pendingTasks: [AxiomTask]
+    @Query private var profiles: [UserProfile]
 
     @State private var punishmentTask: AxiomTask?
 
@@ -52,6 +53,10 @@ struct MainTabView: View {
                 TasksView()
             }
 
+            Tab("Progress", systemImage: "chart.bar.fill", value: AppState.AppTab.progress) {
+                ProgressView()
+            }
+
             Tab("AI", systemImage: "sparkles", value: AppState.AppTab.ai) {
                 AIAssistantView()
             }
@@ -62,6 +67,10 @@ struct MainTabView: View {
         }
         .onAppear {
             checkForFailedTasks()
+            monitorOverdueTasks()
+        }
+        .onChange(of: pendingTasks.count) { _, _ in
+            monitorOverdueTasks()
         }
         .fullScreenCover(item: $punishmentTask) { task in
             PunishmentView(task: task) {
@@ -77,9 +86,26 @@ struct MainTabView: View {
         for task in pendingTasks {
             if task.isStrictMode && task.deadline.addingTimeInterval(gracePeriod) < now && !task.isPunished {
                 task.status = .failed
+                // Record streak failure
+                if let profile = profiles.first {
+                    StreakService.recordTaskFailure(profile: profile)
+                }
                 punishmentTask = task
                 return
             }
+        }
+    }
+
+    private func monitorOverdueTasks() {
+        let hasOverdue = pendingTasks.contains { $0.isOverdue }
+        if hasOverdue {
+            theme.startPunishmentBlink()
+            for task in pendingTasks where task.isOverdue {
+                OverdueAlarmService.scheduleOverdueAlarms(taskId: task.id, title: task.title)
+            }
+        } else {
+            theme.stopPunishmentBlink()
+            OverdueAlarmService.cancelAllOverdueAlarms()
         }
     }
 }

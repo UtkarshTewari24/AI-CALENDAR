@@ -15,6 +15,7 @@ struct AICALENDARApp: App {
         }
 
         // Set Groq API key on launch
+        // Get your actual Groq API key from: https://console.groq.com/keys
         KeychainService.openAIAPIKey = "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"
     }
 

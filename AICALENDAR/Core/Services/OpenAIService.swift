@@ -220,7 +220,7 @@ enum OpenAIServiceError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .noAPIKey: return "No API key configured. Add your OpenAI API key in Settings."
+        case .noAPIKey: return "No API key configured. Please restart the app or add your API key in Settings."
         case .invalidURL: return "Invalid API URL."
         case .requestFailed(let msg): return "Request failed: \(msg)"
         case .decodingFailed(let msg): return "Failed to decode response: \(msg)"

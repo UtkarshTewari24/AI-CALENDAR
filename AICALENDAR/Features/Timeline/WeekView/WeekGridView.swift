@@ -105,9 +105,18 @@ private struct WeekDayPillColumn: View {
     }
 
     private func isPast(_ minute: CGFloat) -> Bool {
-        if day.startOfDay < Date().startOfDay { return true }  // past day
-        if day.startOfDay > Date().startOfDay { return false } // future day
-        return nowMin >= minute // today
+        if day.startOfDay < Date().startOfDay { return true }
+        if day.startOfDay > Date().startOfDay { return false }
+        return nowMin >= minute
+    }
+
+    private func fillFraction(startMin: CGFloat, endMin: CGFloat) -> CGFloat {
+        if day.startOfDay < Date().startOfDay { return 1.0 }  // past day: fully filled
+        if day.startOfDay > Date().startOfDay { return 0.0 }  // future day: empty
+        // Today: partial fill
+        if nowMin >= endMin { return 1.0 }
+        if nowMin <= startMin { return 0.0 }
+        return (nowMin - startMin) / (endMin - startMin)
     }
 
     private var segments: [WeekSegment] {
@@ -160,49 +169,89 @@ private struct WeekDayPillColumn: View {
             ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
                 switch segment {
                 case .gap(let startMin, let endMin):
-                    let height = (endMin - startMin) * ppm
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(isPast(endMin) ? theme.effectiveAccentColor.opacity(0.7) : AxiomColors.surface.opacity(0.5))
-                        .frame(width: 4, height: max(height, 2))
+                    let height = max((endMin - startMin) * ppm, 2)
+                    let fraction = fillFraction(startMin: startMin, endMin: endMin)
+                    weekGapLine(width: 4, height: height, fillFraction: fraction)
 
                 case .event(let event, let startMin, let endMin):
                     let height = max((endMin - startMin) * ppm, barWidth * 0.8)
-                    let past = isPast(endMin)
+                    let fraction = fillFraction(startMin: startMin, endMin: endMin)
 
                     Button {
                         onEventTap(event)
                     } label: {
-                        RoundedRectangle(cornerRadius: barWidth / 2)
-                            .fill(past ? theme.effectiveAccentColor : AxiomColors.surface)
-                            .frame(width: barWidth, height: height)
-                            .overlay {
-                                Image(systemName: event.resolvedIcon)
-                                    .font(.system(size: barWidth * 0.35, weight: .semibold))
-                                    .foregroundStyle(past ? .white.opacity(0.85) : AxiomColors.textSecondary)
-                            }
+                        weekEventBar(
+                            icon: event.resolvedIcon,
+                            width: barWidth,
+                            height: height,
+                            fillFraction: fraction
+                        )
                     }
                     .buttonStyle(.plain)
                 }
             }
 
             // Bottom circle
+            let sleepPast = isPast(sleepMin)
             Circle()
-                .fill(isPast(sleepMin) ? theme.effectiveAccentColor : AxiomColors.surface)
+                .fill(sleepPast ? theme.effectiveAccentColor : AxiomColors.surface)
                 .frame(width: circleSize, height: circleSize)
                 .overlay {
                     if let lastEvent = events.last {
                         Image(systemName: lastEvent.resolvedIcon)
                             .font(.system(size: circleSize * 0.4, weight: .semibold))
-                            .foregroundStyle(isPast(sleepMin) ? .white.opacity(0.85) : AxiomColors.textSecondary)
+                            .foregroundStyle(sleepPast ? .white.opacity(0.85) : AxiomColors.textSecondary)
                     } else {
                         Image(systemName: "moon.fill")
                             .font(.system(size: circleSize * 0.4, weight: .semibold))
-                            .foregroundStyle(isPast(sleepMin) ? .white.opacity(0.85) : AxiomColors.textSecondary)
+                            .foregroundStyle(sleepPast ? .white.opacity(0.85) : AxiomColors.textSecondary)
                     }
                 }
         }
         .contentShape(Rectangle())
         .onTapGesture { onDateSelect() }
+    }
+
+    private func weekGapLine(width: CGFloat, height: CGFloat, fillFraction: CGFloat) -> some View {
+        ZStack(alignment: .top) {
+            RoundedRectangle(cornerRadius: width / 2)
+                .fill(AxiomColors.surface.opacity(0.5))
+                .frame(width: width, height: height)
+
+            if fillFraction > 0 {
+                RoundedRectangle(cornerRadius: width / 2)
+                    .fill(theme.effectiveAccentColor.opacity(0.7))
+                    .frame(width: width, height: height)
+                    .mask(alignment: .top) {
+                        Rectangle()
+                            .frame(width: width, height: height * fillFraction)
+                    }
+            }
+        }
+        .frame(width: width, height: height)
+    }
+
+    private func weekEventBar(icon: String, width: CGFloat, height: CGFloat, fillFraction: CGFloat) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: width / 2)
+                .fill(AxiomColors.surface)
+                .frame(width: width, height: height)
+
+            if fillFraction > 0 {
+                RoundedRectangle(cornerRadius: width / 2)
+                    .fill(theme.effectiveAccentColor)
+                    .frame(width: width, height: height)
+                    .mask(alignment: .top) {
+                        Rectangle()
+                            .frame(width: width, height: height * fillFraction)
+                    }
+            }
+
+            Image(systemName: icon)
+                .font(.system(size: width * 0.35, weight: .semibold))
+                .foregroundStyle(fillFraction > 0.5 ? .white.opacity(0.85) : AxiomColors.textSecondary)
+        }
+        .frame(width: width, height: height)
     }
 
     private func minuteOfDay(_ date: Date) -> CGFloat {

@@ -3,6 +3,7 @@ import AuthenticationServices
 import SwiftData
 
 struct SignInView: View {
+    @Environment(ThemeManager.self) private var theme
     @Environment(\.modelContext) private var modelContext
     let onComplete: () -> Void
 
@@ -17,7 +18,7 @@ struct SignInView: View {
 
                 Text("AXIOM")
                     .font(.system(size: 48, weight: .bold, design: .default))
-                    .foregroundStyle(AxiomColors.accent)
+                    .foregroundStyle(theme.effectiveAccentColor)
                     .tracking(8)
 
                 Text("Your day, held accountable.")

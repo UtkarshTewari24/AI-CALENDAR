@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TaskStatusBadge: View {
     let task: AxiomTask
+    @Environment(ThemeManager.self) private var theme
 
     var body: some View {
         Text(badgeText)
@@ -23,7 +24,7 @@ struct TaskStatusBadge: View {
         if task.status == .completed { return AxiomColors.success }
         if task.status == .failed { return AxiomColors.destructive }
         if task.isOverdue { return AxiomColors.destructive }
-        if task.deadline.isToday { return AxiomColors.accent }
+        if task.deadline.isToday { return theme.effectiveAccentColor }
         return AxiomColors.textSecondary
     }
 }

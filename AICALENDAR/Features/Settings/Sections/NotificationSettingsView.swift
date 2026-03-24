@@ -8,6 +8,8 @@ struct NotificationSettingsView: View {
     @State private var dailyBriefingHour = UserDefaultsService.dailyBriefingHour
     @State private var pomodoroBreak = UserDefaultsService.pomodoroBreakReminder
     @State private var gracePeriod = UserDefaultsService.gracePeriodMinutes
+    @State private var overdueAlarm = UserDefaultsService.overdueAlarmEnabled
+    @State private var punishmentBlink = UserDefaultsService.punishmentBlinkEnabled
 
     private let gracePeriodOptions = [0, 5, 10, 15, 20, 30]
 
@@ -62,6 +64,39 @@ struct NotificationSettingsView: View {
                     .onChange(of: pomodoroBreak) { _, val in
                         UserDefaultsService.pomodoroBreakReminder = val
                     }
+            }
+
+            Section("Overdue Task Alarms") {
+                Toggle("Alarm Every 30 Min (5-10 PM)", isOn: $overdueAlarm)
+                    .onChange(of: overdueAlarm) { _, val in
+                        UserDefaultsService.overdueAlarmEnabled = val
+                        if !val {
+                            OverdueAlarmService.cancelAllOverdueAlarms()
+                        }
+                    }
+
+                Text("When a task is overdue, an alarm-style notification rings every 30 minutes between 5 PM and 10 PM.")
+                    .font(AxiomTypography.micro)
+                    .foregroundStyle(AxiomColors.textSecondary)
+            }
+
+            Section("Visual Punishment") {
+                Toggle("Blinking Red/White Warning", isOn: $punishmentBlink)
+                    .onChange(of: punishmentBlink) { _, val in
+                        UserDefaultsService.punishmentBlinkEnabled = val
+                    }
+
+                Text("When a task is overdue, the app accent color blinks between red and white until the task is completed.")
+                    .font(AxiomTypography.micro)
+                    .foregroundStyle(AxiomColors.textSecondary)
+            }
+
+            Section("Dynamic Island") {
+                Toggle("Show on Dynamic Island", isOn: .constant(false))
+                    .disabled(true)
+                Text("Coming soon: Overdue tasks will appear on your Dynamic Island.")
+                    .font(AxiomTypography.micro)
+                    .foregroundStyle(AxiomColors.textSecondary)
             }
 
             Section("Accountability") {

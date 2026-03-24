@@ -4,6 +4,7 @@ import SwiftData
 struct AddEventView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(ThemeManager.self) private var theme
 
     @State private var title = ""
     @State private var startDate = Date()
@@ -11,6 +12,7 @@ struct AddEventView: View {
     @State private var eventType: EventType = .personal
     @State private var notes = ""
     @State private var isRecurring = false
+    @State private var selectedIcon: String?
 
     var prefilledDate: Date?
 
@@ -26,6 +28,46 @@ struct AddEventView: View {
 
                 Section("Type") {
                     EventTypePicker(selectedType: $eventType)
+                }
+
+                Section("Icon") {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
+                        ForEach(IconSuggestionService.commonIcons, id: \.self) { icon in
+                            Button {
+                                if selectedIcon == icon {
+                                    selectedIcon = nil
+                                } else {
+                                    selectedIcon = icon
+                                }
+                            } label: {
+                                Image(systemName: icon)
+                                    .font(.title3)
+                                    .frame(width: 40, height: 40)
+                                    .background(
+                                        selectedIcon == icon
+                                            ? theme.effectiveAccentColor.opacity(0.2)
+                                            : Color.clear
+                                    )
+                                    .foregroundStyle(
+                                        selectedIcon == icon
+                                            ? theme.effectiveAccentColor
+                                            : AxiomColors.textSecondary
+                                    )
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(
+                                                selectedIcon == icon
+                                                    ? theme.effectiveAccentColor
+                                                    : Color.clear,
+                                                lineWidth: 2
+                                            )
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
 
                 Section("Options") {
@@ -64,7 +106,8 @@ struct AddEventView: View {
             endDate: endDate,
             type: eventType,
             notes: notes,
-            isRecurring: isRecurring
+            isRecurring: isRecurring,
+            iconName: selectedIcon
         )
         modelContext.insert(event)
     }

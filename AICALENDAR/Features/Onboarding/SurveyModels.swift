@@ -2,9 +2,9 @@ import Foundation
 
 struct SurveyResponse: Codable {
     // SECTION A: Daily Rhythm
-    var wakeUpHour: Int = 7
+    var wakeUpHour: Int = 6
     var wakeUpMinute: Int = 0
-    var sleepHour: Int = 23
+    var sleepHour: Int = 22
     var sleepMinute: Int = 0
     var chronotype: Chronotype = .inBetween
     var workStudyHours: Double = 8
@@ -18,6 +18,11 @@ struct SurveyResponse: Codable {
 
     // SECTION C: Work / Study
     var occupation: String = ""
+    var workStartHour: Int = 9
+    var workStartMinute: Int = 0
+    var workEndHour: Int = 17
+    var workEndMinute: Int = 0
+    var workDays: [Int] = [1, 2, 3, 4, 5] // 1=Mon..7=Sun, default Mon-Fri
     var hasFixedCommitments: Bool = false
     var fixedCommitments: [FixedCommitment] = []
     var deepWorkPreference: TimeOfDayPreference = .morning

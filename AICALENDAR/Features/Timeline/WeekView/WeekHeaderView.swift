@@ -5,6 +5,8 @@ struct WeekHeaderView: View {
     let selectedDate: Date
     let onDateSelect: (Date) -> Void
 
+    @Environment(ThemeManager.self) private var theme
+
     var body: some View {
         HStack(spacing: 0) {
             // Spacer for hour label column
@@ -14,12 +16,12 @@ struct WeekHeaderView: View {
                 VStack(spacing: 2) {
                     Text(day.dayOfWeekShort)
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(day.isToday ? AxiomColors.accent : AxiomColors.textSecondary)
+                        .foregroundStyle(day.isToday ? theme.effectiveAccentColor : AxiomColors.textSecondary)
 
                     ZStack {
                         if day.isToday {
                             Circle()
-                                .fill(AxiomColors.accent)
+                                .fill(theme.effectiveAccentColor)
                                 .frame(width: 22, height: 22)
                         }
 

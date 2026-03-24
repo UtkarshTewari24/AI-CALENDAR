@@ -18,6 +18,7 @@ enum AxiomColors {
     static let destructive = Color(hex: "#EF4444")
     static let success = Color(hex: "#22C55E")
     static let nowLine = Color(hex: "#EF4444")
+    static let timeLabel = Color(hex: "#1E1E2D")
 
     // MARK: - Event Type Colors
     static let workout = Color(hex: "#F97316")

@@ -65,12 +65,21 @@ enum KeychainService {
     static let appleUserIdIdentifier = "com.axiom.apple-user-id"
 
     static var openAIAPIKey: String? {
-        get { load(key: openAIAPIKeyIdentifier) }
+        get {
+            // Try keychain first, fall back to UserDefaults
+            if let key = load(key: openAIAPIKeyIdentifier), !key.isEmpty {
+                return key
+            }
+            return UserDefaults.standard.string(forKey: "fallback_api_key")
+        }
         set {
             if let newValue {
                 try? save(key: openAIAPIKeyIdentifier, value: newValue)
+                // Also store in UserDefaults as fallback (keychain can fail on first launch)
+                UserDefaults.standard.set(newValue, forKey: "fallback_api_key")
             } else {
                 delete(key: openAIAPIKeyIdentifier)
+                UserDefaults.standard.removeObject(forKey: "fallback_api_key")
             }
         }
     }

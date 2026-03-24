@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct SchedulePreviewView: View {
+    @Environment(ThemeManager.self) private var theme
     @Bindable var coordinator: OnboardingCoordinator
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
@@ -40,7 +41,7 @@ struct SchedulePreviewView: View {
                             } header: {
                                 Text(day)
                                     .font(AxiomTypography.headline)
-                                    .foregroundStyle(AxiomColors.accent)
+                                    .foregroundStyle(theme.effectiveAccentColor)
                                     .padding(.top, AxiomSpacing.sm)
                             }
                         }
@@ -69,7 +70,7 @@ struct SchedulePreviewView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(AxiomColors.accent)
+                    .background(theme.effectiveAccentColor)
                     .foregroundStyle(.white)
                     .font(AxiomTypography.headline)
                     .cornerRadius(12)

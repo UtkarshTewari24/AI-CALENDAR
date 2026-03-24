@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct TasksView: View {
+    @Environment(ThemeManager.self) private var theme
     @State private var viewModel = TasksViewModel()
     @Query(sort: \AxiomTask.deadline) private var allTasks: [AxiomTask]
 
@@ -22,7 +23,7 @@ struct TasksView: View {
                                         .font(AxiomTypography.caption)
                                         .padding(.horizontal, AxiomSpacing.md)
                                         .padding(.vertical, AxiomSpacing.sm)
-                                        .background(viewModel.selectedFilter == filter ? AxiomColors.accent : AxiomColors.surface)
+                                        .background(viewModel.selectedFilter == filter ? theme.effectiveAccentColor : AxiomColors.surface)
                                         .foregroundStyle(viewModel.selectedFilter == filter ? .white : AxiomColors.textPrimary)
                                         .clipShape(Capsule())
                                 }
@@ -91,7 +92,7 @@ struct TasksView: View {
                         viewModel.showingAddTask = true
                     } label: {
                         Image(systemName: "plus")
-                            .foregroundStyle(AxiomColors.accent)
+                            .foregroundStyle(theme.effectiveAccentColor)
                     }
                 }
             }

@@ -5,8 +5,29 @@ struct ChatInputBar: View {
     let isLoading: Bool
     let onSend: () -> Void
 
+    @Environment(ThemeManager.self) private var theme
+    @State private var speechService = SpeechRecognitionService()
+
     var body: some View {
         HStack(spacing: AxiomSpacing.sm) {
+            // Microphone button
+            Button {
+                if speechService.isRecording {
+                    speechService.stopRecording()
+                    if !speechService.transcribedText.isEmpty {
+                        text = speechService.transcribedText
+                    }
+                } else {
+                    speechService.transcribedText = ""
+                    try? speechService.startRecording()
+                }
+            } label: {
+                Image(systemName: speechService.isRecording ? "mic.fill" : "mic")
+                    .font(.system(size: 20))
+                    .foregroundStyle(speechService.isRecording ? .red : theme.effectiveAccentColor)
+                    .frame(width: 36, height: 36)
+            }
+
             TextField("Ask Axiom anything...", text: $text, axis: .vertical)
                 .lineLimit(1...4)
                 .padding(.horizontal, AxiomSpacing.md)
@@ -20,7 +41,7 @@ struct ChatInputBar: View {
             } label: {
                 if isLoading {
                     ProgressView()
-                        .tint(AxiomColors.accent)
+                        .tint(theme.effectiveAccentColor)
                         .frame(width: 36, height: 36)
                 } else {
                     Image(systemName: "arrow.up.circle.fill")
@@ -28,7 +49,7 @@ struct ChatInputBar: View {
                         .foregroundStyle(
                             text.trimmingCharacters(in: .whitespaces).isEmpty
                                 ? AxiomColors.textSecondary.opacity(0.5)
-                                : AxiomColors.accent
+                                : theme.effectiveAccentColor
                         )
                 }
             }

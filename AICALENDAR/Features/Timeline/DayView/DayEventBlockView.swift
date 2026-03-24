@@ -3,40 +3,58 @@ import SwiftUI
 struct DayEventBlockView: View {
     let event: CalendarEvent
     var isDragging: Bool = false
+    var isPast: Bool = false
+
+    @Environment(ThemeManager.self) private var theme
+
+    private var blockColor: Color {
+        isPast ? AxiomColors.textSecondary.opacity(0.3) : theme.effectiveAccentColor
+    }
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Colored left border
-            RoundedRectangle(cornerRadius: 2)
-                .fill(AxiomColors.color(for: event.type))
-                .frame(width: TimelineConstants.eventBlockBorderWidth)
+        HStack(spacing: AxiomSpacing.sm) {
+            // Category icon
+            Image(systemName: event.resolvedIcon)
+                .font(.system(size: 14))
+                .foregroundStyle(isPast ? AxiomColors.textSecondary : theme.effectiveAccentColor)
+                .frame(width: TimelineConstants.iconColumnWidth)
 
+            // Content
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.title)
                     .font(AxiomTypography.caption)
                     .fontWeight(.medium)
-                    .foregroundStyle(AxiomColors.textPrimary)
+                    .foregroundStyle(isPast ? AxiomColors.textSecondary : AxiomColors.textPrimary)
                     .lineLimit(2)
 
-                Text(event.startDate.formattedShortTime)
+                Text(event.startDate.formatTimeRange(to: event.endDate))
                     .font(AxiomTypography.micro)
-                    .foregroundStyle(AxiomColors.textSecondary)
+                    .foregroundStyle(isPast ? AxiomColors.textSecondary.opacity(0.7) : AxiomColors.textSecondary)
+
+                HStack(spacing: 4) {
+                    Text("\(event.durationMinutes)m")
+                        .font(AxiomTypography.micro)
+                        .foregroundStyle(AxiomColors.textSecondary.opacity(0.7))
+
+                    if event.linkedTaskId != nil {
+                        Image(systemName: isPast ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 10))
+                            .foregroundStyle(isPast ? AxiomColors.success : AxiomColors.textSecondary)
+                    }
+                }
             }
-            .padding(.horizontal, AxiomSpacing.sm)
-            .padding(.vertical, AxiomSpacing.xs)
 
             Spacer(minLength: 0)
-
-            if event.linkedTaskId != nil {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 10))
-                    .foregroundStyle(AxiomColors.accent)
-                    .padding(.trailing, AxiomSpacing.sm)
-            }
         }
+        .padding(.horizontal, AxiomSpacing.sm)
+        .padding(.vertical, AxiomSpacing.xs)
         .background(
             RoundedRectangle(cornerRadius: TimelineConstants.eventBlockCornerRadius)
-                .fill(AxiomColors.color(for: event.type).opacity(0.15))
+                .fill(blockColor.opacity(0.15))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: TimelineConstants.eventBlockCornerRadius)
+                .stroke(blockColor.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: TimelineConstants.eventBlockCornerRadius))
         .shadow(color: isDragging ? .black.opacity(0.3) : .clear, radius: isDragging ? 8 : 0)

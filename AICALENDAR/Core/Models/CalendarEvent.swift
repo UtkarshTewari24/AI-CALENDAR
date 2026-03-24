@@ -12,6 +12,7 @@ final class CalendarEvent {
     var isRecurring: Bool
     var recurRuleData: Data?
     var linkedTaskId: UUID?
+    var iconName: String?
     var priority: Int
     var createdAt: Date
 
@@ -33,6 +34,11 @@ final class CalendarEvent {
     }
 
     @Transient
+    var resolvedIcon: String {
+        iconName ?? type.defaultIcon
+    }
+
+    @Transient
     var durationMinutes: Int {
         Int(endDate.timeIntervalSince(startDate) / 60)
     }
@@ -47,6 +53,7 @@ final class CalendarEvent {
         isRecurring: Bool = false,
         recurRule: RecurrenceRule? = nil,
         linkedTaskId: UUID? = nil,
+        iconName: String? = nil,
         priority: Int = 2,
         createdAt: Date = Date()
     ) {
@@ -59,6 +66,7 @@ final class CalendarEvent {
         self.isRecurring = isRecurring
         self.recurRuleData = try? JSONEncoder().encode(recurRule)
         self.linkedTaskId = linkedTaskId
+        self.iconName = iconName
         self.priority = priority
         self.createdAt = createdAt
     }

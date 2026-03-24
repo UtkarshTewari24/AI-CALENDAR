@@ -7,6 +7,7 @@ struct ProofSubmissionView: View {
     let task: AxiomTask
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(ThemeManager.self) private var theme
 
     @State private var proofText = ""
     @State private var capturedImage: UIImage?
@@ -63,7 +64,7 @@ struct ProofSubmissionView: View {
 
                                 Button("Retake") { showCamera = true }
                                     .font(AxiomTypography.caption)
-                                    .foregroundStyle(AxiomColors.accent)
+                                    .foregroundStyle(theme.effectiveAccentColor)
                             } else {
                                 Button {
                                     showCamera = true
@@ -74,7 +75,7 @@ struct ProofSubmissionView: View {
                                         Text("Take Photo")
                                             .font(AxiomTypography.body)
                                     }
-                                    .foregroundStyle(AxiomColors.accent)
+                                    .foregroundStyle(theme.effectiveAccentColor)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 150)
                                     .background(AxiomColors.surface)
@@ -138,7 +139,7 @@ struct ProofSubmissionView: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 52)
-                                .background(AxiomColors.accent.opacity(0.7))
+                                .background(theme.effectiveAccentColor.opacity(0.7))
                                 .foregroundStyle(.white)
                                 .font(AxiomTypography.headline)
                                 .cornerRadius(12)
@@ -146,7 +147,7 @@ struct ProofSubmissionView: View {
                                 Text("Submit Proof")
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 52)
-                                    .background(canSubmit ? AxiomColors.accent : AxiomColors.surface)
+                                    .background(canSubmit ? theme.effectiveAccentColor : AxiomColors.surface)
                                     .foregroundStyle(canSubmit ? .white : AxiomColors.textSecondary)
                                     .font(AxiomTypography.headline)
                                     .cornerRadius(12)
