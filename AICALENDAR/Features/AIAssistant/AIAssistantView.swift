@@ -80,10 +80,25 @@ struct AIAssistantView: View {
                         Task { await viewModel.sendMessage(modelContext: modelContext) }
                     }
                 }
+
+                // Voice mode overlay
+                if viewModel.isVoiceModeActive {
+                    voiceModeOverlay
+                }
             }
             .navigationTitle("AI Assistant")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.toggleVoiceMode()
+                    } label: {
+                        Image(systemName: viewModel.isVoiceModeActive ? "waveform.circle.fill" : "waveform.circle")
+                            .font(.system(size: 22))
+                            .foregroundStyle(viewModel.isVoiceModeActive ? theme.effectiveAccentColor : AxiomColors.textSecondary)
+                    }
+                }
+
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button("Done") {
@@ -93,6 +108,143 @@ struct AIAssistantView: View {
             }
         }
     }
+
+    // MARK: - Voice Mode Overlay
+
+    private var voiceModeOverlay: some View {
+        ZStack {
+            // Dim background
+            AxiomColors.backgroundPrimary.opacity(0.95)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    viewModel.stopVoiceMode()
+                }
+
+            VStack(spacing: 32) {
+                Spacer()
+
+                // Status text
+                Text(voiceModeStatusText)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(AxiomColors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+
+                // Live transcription
+                if viewModel.isListeningInVoiceMode && !viewModel.speechService.transcribedText.isEmpty {
+                    Text(viewModel.speechService.transcribedText)
+                        .font(.system(size: 15))
+                        .foregroundStyle(AxiomColors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                        .transition(.opacity)
+                }
+
+                // Animated orb
+                ZStack {
+                    // Outer pulse
+                    if viewModel.isListeningInVoiceMode || viewModel.ttsService.isSpeaking {
+                        Circle()
+                            .fill(theme.effectiveAccentColor.opacity(0.15))
+                            .frame(width: 160, height: 160)
+                            .scaleEffect(viewModel.isListeningInVoiceMode ? 1.2 : 1.0)
+                            .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: viewModel.isListeningInVoiceMode)
+
+                        Circle()
+                            .fill(theme.effectiveAccentColor.opacity(0.1))
+                            .frame(width: 200, height: 200)
+                            .scaleEffect(viewModel.ttsService.isSpeaking ? 1.15 : 1.0)
+                            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: viewModel.ttsService.isSpeaking)
+                    }
+
+                    // Main button
+                    Circle()
+                        .fill(
+                            viewModel.isListeningInVoiceMode
+                                ? theme.effectiveAccentColor
+                                : (viewModel.ttsService.isSpeaking ? AxiomColors.surface : AxiomColors.surface)
+                        )
+                        .frame(width: 100, height: 100)
+                        .overlay {
+                            Image(systemName: voiceModeIcon)
+                                .font(.system(size: 36, weight: .medium))
+                                .foregroundStyle(
+                                    viewModel.isListeningInVoiceMode
+                                        ? .white
+                                        : theme.effectiveAccentColor
+                                )
+                        }
+                        .shadow(color: theme.effectiveAccentColor.opacity(0.3), radius: viewModel.isListeningInVoiceMode ? 20 : 5)
+                }
+                .onTapGesture {
+                    handleVoiceOrbTap()
+                }
+
+                // Hint text
+                Text(voiceModeHint)
+                    .font(.system(size: 13))
+                    .foregroundStyle(AxiomColors.textSecondary.opacity(0.6))
+
+                Spacer()
+
+                // Close button
+                Button {
+                    viewModel.stopVoiceMode()
+                } label: {
+                    Text("End Voice Mode")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(AxiomColors.textSecondary)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(AxiomColors.surface)
+                        .cornerRadius(20)
+                }
+                .padding(.bottom, 40)
+            }
+        }
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.isVoiceModeActive)
+        .onAppear {
+            // Auto-start listening when entering voice mode
+            viewModel.startListening()
+        }
+    }
+
+    private var voiceModeStatusText: String {
+        if viewModel.isLoading { return "Thinking..." }
+        if viewModel.ttsService.isSpeaking { return "Axiom is speaking..." }
+        if viewModel.isListeningInVoiceMode { return "Listening..." }
+        return "Tap to speak"
+    }
+
+    private var voiceModeIcon: String {
+        if viewModel.isLoading { return "brain" }
+        if viewModel.ttsService.isSpeaking { return "waveform" }
+        if viewModel.isListeningInVoiceMode { return "mic.fill" }
+        return "mic"
+    }
+
+    private var voiceModeHint: String {
+        if viewModel.isListeningInVoiceMode { return "Tap when done speaking" }
+        if viewModel.ttsService.isSpeaking { return "Tap to interrupt" }
+        return "Tap the orb to start talking"
+    }
+
+    private func handleVoiceOrbTap() {
+        if viewModel.ttsService.isSpeaking {
+            // Interrupt speech and start listening
+            viewModel.ttsService.stop()
+            viewModel.startListening()
+        } else if viewModel.isListeningInVoiceMode {
+            // Stop listening and send
+            Task { await viewModel.stopListeningAndSend(modelContext: modelContext) }
+        } else {
+            // Start listening
+            viewModel.startListening()
+        }
+    }
+
+    // MARK: - Status Card
 
     private var statusCard: some View {
         HStack {
@@ -108,7 +260,7 @@ struct AIAssistantView: View {
             }
             Spacer()
             Image(systemName: "sparkles")
-                .foregroundStyle(theme.accentColor)
+                .foregroundStyle(theme.effectiveAccentColor)
         }
         .padding(AxiomSpacing.md)
         .background(AxiomColors.surface)
